@@ -90,4 +90,12 @@ export class DictService {
 				})
 		}
 	}
+
+	async getById(id: string): Promise< DictEntity > {
+		try {
+			return await this.entity.findOneBy({id})
+		} catch (e) {
+			return null
+		}
+	}
 }

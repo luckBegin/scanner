@@ -49,8 +49,8 @@ export class DTODict {
 }
 
 export class QDict {
-	@ApiProperty({ description: '类别 1: 用户名 , 2: 密码 , 3: 路径'})
-	type: number;
+	@ApiProperty({ description: '类别 1: 用户名 , 2: 密码 , 3: 路径', required: false})
+	type?: number;
 
 	@ApiProperty({ description: 'skip'})
 	skip:number

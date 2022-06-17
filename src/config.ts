@@ -16,5 +16,6 @@ export const CONFIG = {
 		synchronize: false,
 		logging: false,
 	},
-	port: 3000
+	port: 3000,
+	dir: __dirname
 };
