@@ -10,6 +10,7 @@ import * as path from 'path'
 import { fork } from 'child_process'
 import * as fs from 'fs'
 import { CONFIG } from '../../../config';
+import { resolveObjectURL } from 'buffer';
 
 @Injectable()
 export class ReqService {
@@ -50,13 +51,16 @@ export class ReqService {
 		// const child = fork(path.resolve(__dirname, './req.child'))
 		// child.on('message' , e => { console.log(e) })
 		// child.send({ hello: 'world' })
-		const dict = {}
+		const dict = []
 		for(let key in e.bodyDict) {
 			const dictId = e.bodyDict[key]
 			const filePath = await this.dictService.getById(dictId)
 			const p = path.join(CONFIG.dir,'../public/files/dict', filePath.path)
 			const result = fs.readFileSync(p, 'utf-8').split('\r\n')
-			dict[key] = result
+			dict.push({
+				key: key,
+				dict: result
+			})
 		}
 
 		const bodyPara = e.body.split('&')
@@ -92,10 +96,13 @@ export class ReqService {
 
 		console.log(keys)
 		console.log(dict)
-		for(let key in dict ) {
-			const config = dict[key]
-			const filed = keys[key]
-			// console.log(filed)
+		const recursive = ( key: string , dict: string[]) => {
+
 		}
+		// for(let key in dict ) {
+		// 	const config = dict[key]
+		// 	const filed = keys[key]
+		// 	console.log(filed)
+		// }
 	}
 }
