@@ -32,13 +32,14 @@ export class DictService {
 			listResponse.result = result[0] ;
 			return r.setData(listResponse)
 		} catch (e) {
-			return r.setMessage(e);
+			return r.error(e.toString())
 		}
 	}
 
 	public async create(data: any, file: Express.Multer.File): Promise<Response<null>> {
 		const r = Response.build<undefined>();
 		try {
+			if(!file) return r.badReq("文件不存在")
 			const entity = this.entity.create({
 				name: data.name,
 				type: data.type,
@@ -47,7 +48,7 @@ export class DictService {
 			await this.entity.insert(entity);
 			return r;
 		} catch (e) {
-			return r.setCode(HttpStatus.INTERNAL_SERVER_ERROR).setMessage(e);
+			return r.error(e.toString())
 		}
 	}
 
@@ -61,7 +62,7 @@ export class DictService {
 			const strArr = result.split(/\r?\n/);
 			return r.setData(new DictFileVo(entity).setResult(strArr))
 		} catch (e) {
-			return r.setCode(HttpStatus.INTERNAL_SERVER_ERROR).setMessage(e);
+			return r.error(e.toString())
 		}
 	}
 
@@ -75,7 +76,7 @@ export class DictService {
 			await this.entity.delete(entity)
 			return r
 		} catch (e) {
-			return r.setCode(HttpStatus.INTERNAL_SERVER_ERROR).setMessage(e);
+			return r.error(e.toString())
 		}
 	}
 

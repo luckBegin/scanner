@@ -8,7 +8,7 @@ export interface TaskDto {
 	target: string
 	thread: number
 	startTime?: number
-	parameter: string
+	parameter: Record<string, any>
 	desc?: string
 }
 

@@ -1,7 +1,6 @@
 import { Subject } from "rxjs";
-import { fork } from "child_process";
-import { join } from "path";
-import { Config } from "../../common/config";
+import { ChildProcess, fork } from "child_process";
+import { DomainScanner } from "./domain";
 
 export interface ScannerOutput {
 
@@ -11,28 +10,24 @@ export interface ScannerBaseInput<T> {
 	param: T,
 }
 
-export class Scanner {
-	private $output = new Subject<ScannerOutput>();
+interface ScannerConstructor {
+	new(): Scanner;
+}
 
-	public run(q: ScannerBaseInput<string>) {
-	}
 
-	public output() {
-	}
+export enum ScannerType {
+	"DOMAIN" ,
+	"DIR",
+	"PARAMETER" ,
+}
 
-	static Run() {
-		const path = join(Config.baseDir,'/src/util/scanner/a.js')
-		const child = fork(path);
-		child.on('message', function(m){
-			console.log('message from child: ' + JSON.stringify(m));
-		});
-		child.send({from: 'parent'});
-		child.on('error', e => {
-			console.log(e);
-		})
-		child.on('close', e => {
-			console.log(e);
-		})
-		console.log(child)
+export abstract class Scanner {
+	public $output = new Subject<ScannerOutput>();
+	public process: Array<ChildProcess> = [];
+	public terminate() {
+		this.process.forEach(i => i.kill());
 	}
+	public abstract run(q: ScannerBaseInput<string>): void
+
+	public abstract created(p: Record<string, any>): Array<ChildProcess>
 }

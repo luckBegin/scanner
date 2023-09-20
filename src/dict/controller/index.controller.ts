@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Query, Res, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Dict } from "../entity/index.entity";
 import { Response } from "../../common";
@@ -18,9 +18,11 @@ export class DictController {
 	@Get('')
 	@ApiResponse({description:'查询列表' , type: Array< Dict > })
 	async list (
-		@Query() q: DictListQuery
+		@Query() q: DictListQuery,
+		@Res() res
 	): Promise< Response< ListRes >> {
-		return this.service.list(new DictListQuery(q) )
+		const r = await this.service.list(new DictListQuery(q) )
+		return res.status(r.code).json(r)
 	}
 
 	@Post()
@@ -34,23 +36,29 @@ export class DictController {
 	}))
 	async create(
 		@UploadedFile() file: Express.Multer.File,
-		@Body() body: any
+		@Body() body: any,
+		@Res() res
 	) {
-		return this.service.create(body, file)
+		const r = await this.service.create(body, file)
+		return res.status(r.code).json(r)
 	}
 
 	@Get(':id')
 	@ApiResponse({description:'查询列表' , type: Array< Dict > })
 	async getFile (
-		@Param('id') id: number
+		@Param('id') id: number,
+		@Res() res
 	): Promise< Response< DictFileVo >> {
-		return this.service.getFileById(id)
+		const r = await this.service.getFileById(id)
+		return res.status(r.code).json(r)
 	}
 
 	@Delete(':id')
 	async delete(
-		@Param("id") id: number
+		@Param("id") id: number,
+		@Res() res
 	): Promise< Response< null > > {
-		return this.service.del(id)
+		const r = await this.service.del(id)
+		return res.status(r.code).json(r)
 	}
 }

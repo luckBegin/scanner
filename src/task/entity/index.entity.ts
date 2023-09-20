@@ -1,5 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
+import { ScannerType } from "../../util/scanner";
 
 export enum TaskType {
 	SCAN
@@ -9,7 +10,8 @@ export enum TaskStatus {
 	SUCCESS,
 	FAIL,
 	PENDING,
-	CANCEL
+	CANCEL,
+	CREATED
 }
 @Entity()
 export class Task {
@@ -24,8 +26,10 @@ export class Task {
 	@Column({ type: "enum", enum: TaskType })
 	type: TaskType;
 
+	@Column({ type: "enum", enum: ScannerType })
+	scanner: ScannerType;
 
-	@Column({ type: "enum", enum: TaskStatus})
+	@Column({ type: "enum", enum: TaskStatus,default: TaskStatus.CREATED})
 	status: TaskStatus;
 
 	@Column()
@@ -35,8 +39,10 @@ export class Task {
 	startTime: number;
 
 	@Column({type: 'json'})
-	parameter: string ;
+	parameter: Record<string, any> ;
 
 	@Column({type:"text"})
 	desc: string ;
 }
+
+

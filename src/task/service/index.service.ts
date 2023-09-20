@@ -1,10 +1,11 @@
-import { HttpStatus, Injectable } from "@nestjs/common";
+import { HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { TaskDto, TaskListQuery } from "../dto";
 import { ListResponse, Response } from "../../common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Task } from "../entity/index.entity";
 import { Repository } from "typeorm";
-import { Scanner } from "../../util/scanner/base";
+import { ScannerManage } from "../../util/scanner";
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 export type List = Array< Task >;
 export type ListRes = ListResponse< List >
@@ -13,6 +14,9 @@ export class TaskService {
 	constructor(
 		@InjectRepository(Task)
 		private entity: Repository<Task>,
+
+		@Inject(CACHE_MANAGER)
+		private cacheManager: any
 	) {
 	}
 
@@ -30,7 +34,7 @@ export class TaskService {
 			return r.setData(listResponse)
 
 		} catch (e) {
-			return r.setMessage(e)
+			return r.error(e.toString())
 		}
 	}
 
@@ -41,7 +45,7 @@ export class TaskService {
 			await this.entity.insert(entity)
 			return r
 		} catch (e) {
-			return r.error(e)
+			return r.error(e.toString())
 		}
 	}
 
@@ -52,16 +56,30 @@ export class TaskService {
 			if(!e) return r.badReq('数据不存在')
 			await this.entity.delete(e)
 		} catch (e) {
-			return r.error(e)
+			return r.error(e.toString())
 		}
 	}
 
 	async start(id: number): Promise< Response<null> > {
 		const r = new Response<null>()
 		try {
-			Scanner.Run();
+			const entity = await this.entity.findOne({where:{id}})
+			const sid = ScannerManage.Run(entity.scanner,entity.parameter);
+			console.log(this.cacheManager.set);
+			// this.cacheManager.('key', 'value');
+			console.log(sid);
+			return r
 		} catch (e) {
-			return r.error(e)
+			return r.error(e.toString())
+		}
+	}
+
+	async terminate(id: number): Promise< Response<null> > {
+		const r = new Response<null>()
+		try {
+			ScannerManage.terminate('id');
+		} catch (e) {
+			return r.error(e.toString())
 		}
 	}
 }
