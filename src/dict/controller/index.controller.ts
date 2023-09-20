@@ -3,7 +3,7 @@ import { ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Dict } from "../entity/index.entity";
 import { Response } from "../../common";
 import { DictFileVo, DictListQuery } from "../dto";
-import { DictService } from "../service/index.service";
+import { DictService, ListRes } from "../service/index.service";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { diskStorage } from "multer";
 import { Config } from "../../common/config";
@@ -15,11 +15,11 @@ export class DictController {
 		private service: DictService ,
 	) {
 	}
-	@Get('list')
+	@Get('')
 	@ApiResponse({description:'查询列表' , type: Array< Dict > })
 	async list (
 		@Query() q: DictListQuery
-	): Promise< Response< Array< Dict > >> {
+	): Promise< Response< ListRes >> {
 		return this.service.list(new DictListQuery(q) )
 	}
 

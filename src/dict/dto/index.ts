@@ -10,7 +10,7 @@ export class DictListQuery extends Query implements IDictListQuery {
 
 	constructor(q: IDictListQuery) {
 		super(q);
-		this.type = q.type;
+		if(q) q.type && (this.type = q.type)
 	}
 }
 

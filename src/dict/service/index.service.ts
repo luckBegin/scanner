@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
-import { Response } from "src/common/model";
+import { ListResponse, Response } from "src/common/model";
 import { Dict } from "../entity/index.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
@@ -8,7 +8,8 @@ import { join } from "path";
 import { readFileSync, unlinkSync } from "fs";
 import { Config } from "../../common/config";
 
-type List = Array<Dict>
+export type List = Array< Dict > ;
+export type ListRes = ListResponse< List >
 
 @Injectable()
 export class DictService {
@@ -18,15 +19,18 @@ export class DictService {
 	) {
 	}
 
-	public async list(q: DictListQuery): Promise<Response<List>> {
-		const r = Response.build<List>();
+	public async list(q: DictListQuery): Promise<Response<ListRes>> {
+		const r = Response.build< ListRes >();
 		try {
-			const result = await this.entity.find({
+			const result = await this.entity.findAndCount({
 				where: { type: q.type },
-				skip: q.pageNumber,
+				skip: (q.pageNumber - 1 ) * q.pageSize,
 				take: q.pageSize,
 			});
-			return r.setData(result);
+			const listResponse = new ListResponse< List >();
+			listResponse.total = result[1];
+			listResponse.result = result[0] ;
+			return r.setData(listResponse)
 		} catch (e) {
 			return r.setMessage(e);
 		}
