@@ -3,7 +3,7 @@ import {ApiProperty} from "@nestjs/swagger";
 import {ScannerType} from "../../util/scanner";
 
 export enum TaskType {
-	SCAN
+	SCAN="SCAN"
 }
 
 export enum TaskStatus {
