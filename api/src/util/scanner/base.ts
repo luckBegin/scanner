@@ -1,5 +1,11 @@
 import { Subject } from "rxjs";
-import { ChildProcess } from "child_process";
+import {ChildProcess, fork} from "child_process";
+import * as OS from "os";
+import {join} from "path";
+import {Config} from "../../common/config";
+import {InputEventType, OutputEvent, OutputEventType} from "./worker-event";
+import {DictService} from "../../dict/service/index.service";
+import {getApp} from "../../main";
 export enum ScannerOutputType{
 	UPLOAD,
 	ERROR,
@@ -17,9 +23,9 @@ interface ScannerConstructor {
 	new(): Scanner;
 }
 export enum ScannerType {
-	"DOMAIN",
-	"DIR",
-	"PARAMETER",
+	"DOMAIN"="DOMAIN",
+	"DIR"="DIR",
+	"PARAMETER"="PARAMETER",
 }
 
 export type IScannerRunStatus = { success: boolean, message: string, data: Record<string, any>, id: string }
@@ -73,5 +79,48 @@ export abstract class Scanner {
 		this.process.forEach(i => i.kill());
 	}
 
-	public abstract run(q: Record<string, any>): Promise< ScannerRunStatus >
+
+	private thread = OS.cpus().length
+	private dictService: DictService = getApp().get(DictService)
+
+	protected abstract workerPath: string
+	public async run(q: Record<string, any>): Promise< ScannerRunStatus > {
+		const { target, thread, dict } = q ;
+		const r = new ScannerRunStatus()
+		if( !target ) return r.markAsFail('目标不存在')
+		if( !dict ) return r.markAsFail('字典不存在')
+		if( thread ) this.thread = thread
+		const dictResult = await this.dictService.getFileById(dict)
+		if( !dictResult.success ) return r.markAsFail(dictResult.message) ;
+		const dictArr = dictResult.data.map( i => i.result );
+		for( let i = 0 ; i <= this.thread ; i ++ ) {
+			this.process.push(this.createWorker(target,dictArr.flat()))
+		}
+		return r.markAsSuccess().setId(this.id).setScanner(this)
+	}
+
+	protected createWorker(target:string, dictArr: Array<string>): ChildProcess {
+		const path = join(Config.baseDir, this.workerPath)
+		const worker = fork(path,[`-domain=${target}`, `-id=${this.id}`])
+		const sendTask = () => {
+			if( !dictArr.length ) {
+				worker.kill()
+				this.thread --
+				if( !this.thread ) {
+					this.$output.next({ type: ScannerOutputType.COMPLETE })
+				}
+			} else {
+				const data = dictArr.pop() ;
+				worker.send({ type: InputEventType.update, data })
+			}
+		}
+		worker.on('message' , ({type,data}: OutputEvent) => {
+			sendTask()
+			if( type === OutputEventType.UPDATE ) {
+				this.$output.next({type: ScannerOutputType.UPLOAD, data })
+			}
+		})
+
+		return worker
+	}
 }

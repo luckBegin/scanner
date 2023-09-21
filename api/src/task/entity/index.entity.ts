@@ -1,18 +1,19 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-import { ApiProperty } from "@nestjs/swagger";
-import { ScannerType } from "../../util/scanner";
+import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
+import {ApiProperty} from "@nestjs/swagger";
+import {ScannerType} from "../../util/scanner";
 
 export enum TaskType {
 	SCAN
 }
 
 export enum TaskStatus {
-	SUCCESS,
-	FAIL,
-	PENDING,
-	CANCEL,
-	CREATED
+	CREATED='CREATED',
+	PENDING='PENDING',
+	SUCCESS='SUCCESS',
+	FAIL='FAIL',
+	CANCEL='CANCEL',
 }
+
 @Entity()
 export class Task {
 	@PrimaryGeneratedColumn()
@@ -23,26 +24,26 @@ export class Task {
 	@ApiProperty()
 	name: string;
 
-	@Column({ type: "enum", enum: TaskType })
+	@Column({type: "enum", enum: TaskType})
 	type: TaskType;
 
-	@Column({ type: "enum", enum: ScannerType })
+	@Column({type: "enum", enum: ScannerType})
 	scanner: ScannerType;
 
-	@Column({ type: "enum", enum: TaskStatus,default: TaskStatus.CREATED})
+	@Column({type: "enum", enum: TaskStatus, default: TaskStatus.CREATED})
 	status: TaskStatus;
 
 	@Column()
 	target: string;
 
-	@Column({ default: -1 })
+	@Column({default: -1})
 	startTime: number;
 
 	@Column({type: 'json'})
-	parameter: Record<string, any> ;
+	parameter: Record<string, any>;
 
-	@Column({type:"text"})
-	desc: string ;
+	@Column({type: "text"})
+	desc: string;
 }
 
 
