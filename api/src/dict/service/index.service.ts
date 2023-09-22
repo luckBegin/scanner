@@ -52,7 +52,7 @@ export class DictService {
 		}
 	}
 
-	public async getFileById(ids: Array<number>): Promise<Response<DictFileVo[]>> {
+	public async getFileByIds(ids: Array<number>): Promise<Response<DictFileVo[]>> {
 		const r = Response.build<DictFileVo[]>();
 		try {
 			let pass = true
@@ -68,7 +68,7 @@ export class DictService {
 				} else {
 					const path = this.getFilePath(entity.fileName)
 					const result = readFileSync(path, "utf-8");
-					const strArr = result.split(/\r?\n/);
+					const strArr = result.split(/\r?\n/).filter ( i => !!i ) ;
 					resultArr.push(new DictFileVo(entity).setResult(strArr))
 				}
 			}

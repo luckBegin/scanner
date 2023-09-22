@@ -1,4 +1,4 @@
-import { Subject } from "rxjs";
+import {Subject} from "rxjs";
 import {ChildProcess, fork} from "child_process";
 import * as OS from "os";
 import {join} from "path";
@@ -6,6 +6,7 @@ import {Config} from "../../common/config";
 import {InputEventType, OutputEvent, OutputEventType} from "./worker-event";
 import {DictService} from "../../dict/service/index.service";
 import {getApp} from "../../main";
+
 export enum ScannerOutputType{
 	UPLOAD,
 	ERROR,
@@ -90,16 +91,17 @@ export abstract class Scanner {
 		if( !target ) return r.markAsFail('目标不存在')
 		if( !dict ) return r.markAsFail('字典不存在')
 		if( thread ) this.thread = thread
-		const dictResult = await this.dictService.getFileById(dict)
+		const dictResult = await this.dictService.getFileByIds(dict)
 		if( !dictResult.success ) return r.markAsFail(dictResult.message) ;
 		const dictArr = dictResult.data.map( i => i.result );
-		for( let i = 0 ; i <= this.thread ; i ++ ) {
-			this.process.push(this.createWorker(target,dictArr.flat()))
+
+		for( let i = 0 ; i < this.thread ; i ++ ) {
+			this.process.push(this.createWorker(target,dictArr.flat(), q))
 		}
 		return r.markAsSuccess().setId(this.id).setScanner(this)
 	}
 
-	protected createWorker(target:string, dictArr: Array<string>): ChildProcess {
+	protected createWorker(target:string, dictArr: Array<string>, q: Record<string, any>): ChildProcess {
 		const path = join(Config.baseDir, this.workerPath)
 		const worker = fork(path,[`-domain=${target}`, `-id=${this.id}`])
 		const sendTask = () => {
@@ -111,13 +113,18 @@ export abstract class Scanner {
 				}
 			} else {
 				const data = dictArr.pop() ;
-				worker.send({ type: InputEventType.update, data })
+				worker.send({ type: InputEventType.update, data , para: q  })
 			}
 		}
+		worker.on('exit', () => console.log("I'm Die")) ;
 		worker.on('message' , ({type,data}: OutputEvent) => {
 			sendTask()
 			if( type === OutputEventType.UPDATE ) {
 				this.$output.next({type: ScannerOutputType.UPLOAD, data })
+			}
+			if( type === OutputEventType.ERROR ) {
+				this.terminate()
+				this.$output.next({type: ScannerOutputType.ERROR, data })
 			}
 		})
 

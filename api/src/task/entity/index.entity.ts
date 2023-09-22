@@ -39,10 +39,10 @@ export class Task {
 	@Column({default: -1})
 	startTime: number;
 
-	@Column({type: 'json'})
+	@Column({type: 'json', nullable: true})
 	parameter: Record<string, any>;
 
-	@Column({type: "text"})
+	@Column({type: "text", nullable: true})
 	desc: string;
 }
 

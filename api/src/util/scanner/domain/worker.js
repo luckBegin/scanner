@@ -6,8 +6,6 @@ const id = /-id=(.*)/gi.exec(process.argv[3])[1]
 const update = (type=0,d = {}) => {
 	process.send({
 		type ,
-		message: "" ,
-		success: d.success || true ,
 		data: d.data
 	})
 }
@@ -21,7 +19,7 @@ const startTask = ({ data }) => {
 		const result = { address: '' ,domain: host, success: true }
 		if( err ) {
 			result.success = false
-			return update(1,{ success: false , data:result })
+			return update(1,{ data:result })
 		}
 		result.address = address
 		return update(1,{ data:result })

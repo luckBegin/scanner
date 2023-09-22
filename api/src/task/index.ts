@@ -4,12 +4,14 @@ import { Task } from "./entity/index.entity";
 import { TaskController } from "./controller/index.controller";
 import { TaskService } from "./service/index.service";
 import { MongooseModule } from "@nestjs/mongoose";
-import { Domain, DomainSchema } from "./scheme/index.scheme";
+import { Domain, DomainSchema } from "./scheme/domain.scheme";
+import { DirSchema, Dir } from "./scheme/dir.scheme";
 import { ModelDefinition } from "@nestjs/mongoose/dist/interfaces/model-definition.interface";
 
 const entities = [Task];
 const mongo: Array< ModelDefinition > = [
-	{ name: Domain.name, schema: DomainSchema }
+	{ name: Domain.name, schema: DomainSchema },
+	{ name: Dir.name, schema: DirSchema },
 ]
 @Module({
 	imports: [
