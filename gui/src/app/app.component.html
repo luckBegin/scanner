@@ -3,7 +3,7 @@
 		<ul nz-menu nzTheme="dark" nzMode="inline">
 				<li nz-submenu nzTitle="扫描" nzIcon="user">
 				<ul>
-					<li nz-menu-item>域名</li>
+					<li nz-menu-item (click)="navigate('domain')">域名</li>
 					<li nz-menu-item>目录</li>
 				</ul>
 			</li>
@@ -23,7 +23,9 @@
 				<nz-breadcrumb-item>User</nz-breadcrumb-item>
 				<nz-breadcrumb-item>Bill</nz-breadcrumb-item>
 			</nz-breadcrumb>
-			<div class="inner-content">Bill is a cat.</div>
+			<div class="router-container">
+				<router-outlet></router-outlet>
+			</div>
 		</nz-content>
 	</nz-layout>
 </nz-layout>
