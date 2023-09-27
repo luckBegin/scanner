@@ -33,12 +33,6 @@ export class BaseShape {
 }
 
 export class Tree extends BaseShape {
-	canvas = null
-	ctx = null
-	screenWidth = null
-	screenHeight = null
-	center = {x: 0, y: 0}
-
 	text = null
 	heart = null
 
@@ -46,18 +40,44 @@ export class Tree extends BaseShape {
 		super(c, w, h)
 		this.text = new Text(c, w, h)
 		this.heart = new Heart(c, w, h)
+		this.seed = new Seed(c,w,h)
 		this.init()
 	}
 
 	init() {
+		this.animate( () => {
+			this.clearScreen()
+			this.heart.init()
+			this.text.init()
+			this.init()
+		})
+	}
+
+	die () {
+		this.cancelAnimate()
+		this.clearScreen() ;
+		this.seed.init((h) => {
+			this.drawBranch(h)
+		})
+	}
+
+	drawBranch (h) {
+		this.ctx.save()
+		this.moveToCenter()
+		this.ctx.lineWidth = 6;
+		this.ctx.strokeStyle = "#333";
+		this.ctx.beginPath();
+		this.ctx.moveTo(0, h);
+		this.ctx.quadraticCurveTo(0, 0, 10, 100);
+		this.ctx.stroke();
+		this.ctx.restore()
 	}
 }
 
 class Heart extends BaseShape {
-	animateId = 0;
 	animaScale = 1
-	animaScaleRate = 0.02
-	scale = 2 ;
+	animaScaleRate = 0.03
+	scale = 1.5 ;
 	mark = 1
 	constructor(c, w, h) {
 		super(c, w, h);
@@ -72,9 +92,7 @@ class Heart extends BaseShape {
 			this.mark = 1
 		}
 		this.animaScale = this.animaScale + this.mark * this.animaScaleRate
-		this.clearScreen()
 		this.draw()
-		this.animate(() => this.init())
 	}
 
 	draw() {
@@ -116,5 +134,67 @@ class Text extends BaseShape {
 		this.ctx.fillText("Come", 40, 10);
 		this.ctx.closePath()
 		this.ctx.restore();
+	}
+}
+
+class Seed extends BaseShape {
+	bottom = 20 ;
+	height = 0
+	landBottom  = 0
+	seedSpeed = 2
+	percent = 0
+	landSize = 0
+	landSpacing = 20
+	constructor(c,w,h) {
+		super(c,w,h);
+		this.landBottom = this.screenHeight / 2 - this.bottom
+		this.percent = 0
+	}
+
+	drawSeed (){
+		this.clearScreen()
+		this.ctx.save()
+		this.moveToCenter()
+		this.ctx.beginPath()
+		this.ctx.fillStyle = 'red'
+		this.ctx.fillStyle = 'rgb(119, 70, 37)';
+		this.ctx.shadowColor = 'rgb(35, 31, 32)';
+		this.ctx.shadowBlur = 2;
+		this.ctx.arc(0, this.height, 9, 0, 2 * Math.PI)
+		this.ctx.fill()
+		this.ctx.closePath()
+		this.ctx.restore()
+	}
+
+	drawLand (){
+		const drawLand = (x) => {
+			this.ctx.save()
+			this.ctx.beginPath()
+			this.moveToCenter()
+			this.ctx.moveTo(0,this.landBottom)
+			this.ctx.lineTo( x , this.landBottom)
+			this.ctx.lineWidth = 14
+			this.ctx.strokeStyle = 'rgb(119, 70, 37)';
+			this.ctx.lineCap="round";
+			this.ctx.stroke()
+			this.ctx.closePath()
+			this.ctx.restore()
+		}
+		drawLand(this.landSize )
+		drawLand(-this.landSize )
+	}
+	init (fn) {
+		this.drawSeed()
+		this.drawLand()
+		this.height += this.seedSpeed
+		const p = this.landBottom / this.seedSpeed / 100
+		const percent = this.percent * p > 1 ? 1 : this.percent * p
+		this.percent += 0.01 ;
+		this.landSize = (this.screenWidth / 2 - this.landSpacing) * percent
+		this.animate( () => this.init(fn) )
+		if( this.screenHeight / 2 - this.height <= this.bottom ) {
+			this.cancelAnimate()
+			if(fn)fn(this.height)
+		}
 	}
 }
