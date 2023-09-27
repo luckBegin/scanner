@@ -21,7 +21,7 @@ Page({
 				canvas.width = res[0].width * dpr
 				canvas.height = res[0].height * dpr
 				ctx.scale(dpr, dpr)
-				// const tree = new Tree(res[0].node,windowWidth,windowHeight)
+				const tree = new Tree(res[0].node,windowWidth,windowHeight)
 				// ctx = canvas.getContext('2d')
 				// const dpr = wx.getSystemInfoSync().pixelRatio
 				// canvas.width = res[0].width * dpr
@@ -30,7 +30,7 @@ Page({
 				//
 				// const point = this.data.center
 				// ctx.translate(point.x, point.y);
-				this.init()
+				// this.init()
 			})
 	},
 	init() {
