@@ -1,3 +1,2 @@
-<canvas type="2d" id="canvas" style="width: {{ screen_width }}px;height: {{ screen_height}}px" bindtap="canvasClick">
-
+<canvas type="2d" id="canvas" style="width: {{ windowWidth }}px;height: {{ windowHeight }}px" bindtap="canvasClick">
 </canvas>
