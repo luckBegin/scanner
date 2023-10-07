@@ -16,15 +16,16 @@ const threeBezier = (t, p1, cp1, cp2, p2) => {
 	return [x, y];
 }
 
-const drawPoint = (ctx , p , c ='red') => {
+const drawPoint = (ctx, p, c = 'red') => {
 	ctx.save()
 	ctx.beginPath();
 	ctx.fillStyle = c
-	ctx.arc(p[0],p[1], 10 , 0 , Math.PI * 2)
+	ctx.arc(p[0], p[1], 2, 0, Math.PI * 2)
 	ctx.fill()
 	ctx.closePath()
 	ctx.restore()
 }
+
 export class BaseShape {
 	canvas = null;
 	ctx = null
@@ -92,16 +93,16 @@ export class Tree extends BaseShape {
 		const point = []
 		const start = [this.center.x, this.center.y * 2 - h - 7]
 		const end = [this.center.x - 20, this.center.y]
-		const delta = [this.center.x , this.center.y + 200]
-		const delta2 = [this.center.x , this.center.y]
+		const delta = [this.center.x, this.center.y + 200]
+		const delta2 = [this.center.x, this.center.y]
 
 		let radius = 10
 		for (let i = 0; i < 100; i++) {
-			point.push(threeBezier(i / 100, start, delta, delta2 , end))
+			point.push(threeBezier(i / 100, start, delta, delta2, end))
 		}
-		let idx = 0 ;
+		let idx = 0;
 		const draw = () => {
-			if( idx >= point.length ) {
+			if (idx >= point.length) {
 				this.cancelAnimate()
 				this.drawSubBranch(point)
 				return
@@ -110,12 +111,13 @@ export class Tree extends BaseShape {
 			this.ctx.save()
 			this.ctx.beginPath()
 			radius *= 0.98
+			p.push(radius);
 			this.ctx.arc(p[0], p[1], radius, 0, 2 * Math.PI)
-			this.ctx.fillStyle =  'rgb(119, 70, 37)';
+			this.ctx.fillStyle = 'rgb(119, 70, 37)';
 			this.ctx.fill()
 			this.ctx.closePath()
 			this.ctx.restore()
-			idx ++
+			idx++
 			this.animate(draw)
 		}
 		this.animate(draw)
@@ -123,37 +125,39 @@ export class Tree extends BaseShape {
 
 	drawSubBranch(points) {
 		const point = points[points.length - 30]
-		const tarPoint = [point[0] - 100 , point[1] - 50]
-		const delta = [ point[0] - 50, point[1]]
-		const delta2 = [tarPoint[0] - 100 , tarPoint[1] + 20 ]
-		drawPoint(this.ctx , point , 'red')
-		drawPoint(this.ctx , delta, 'green')
-		drawPoint(this.ctx , delta2, 'purple')
-		drawPoint(this.ctx , tarPoint, 'red')
+		const sub = [
+			[
+				point,
+				[point[0] - 100, point[1] - 50],
+				[point[0] - 30, point[1] - 50],
+				[point[0] - 90, point[1] - 55]
+			]
+		]
 
-		// let radius = 10
-		// for (let i = 0; i < 100; i++) {
-		// 	point.push(threeBezier(i / 100, point, delta, delta2 , tarPoint))
-		// }
-		// let idx = 0 ;
-		// const draw = () => {
-		// 	if( idx >= point.length ) {
-		// 		this.cancelAnimate()
-		// 		return
-		// 	}
-		// 	const p = point[idx]
-		// 	this.ctx.save()
-		// 	this.ctx.beginPath()
-		// 	radius *= 0.98
-		// 	this.ctx.arc(p[0], p[1], radius, 0, 2 * Math.PI)
-		// 	this.ctx.fillStyle =  'rgb(119, 70, 37)';
-		// 	this.ctx.fill()
-		// 	this.ctx.closePath()
-		// 	this.ctx.restore()
-		// 	idx ++
-		// 	this.animate(draw)
-		// }
-		// draw()
+		sub.forEach()
+		let radius = 3
+		for (let i = 0; i < 100; i++) {
+			point.push(threeBezier(i / 100, point, delta, delta2, tarPoint))
+		}
+		let idx = 0;
+		const draw = () => {
+			if (idx >= point.length) {
+				this.cancelAnimate()
+				return
+			}
+			const p = point[idx]
+			this.ctx.save()
+			this.ctx.beginPath()
+			radius *= 0.98
+			this.ctx.arc(p[0], p[1], radius, 0, 2 * Math.PI)
+			this.ctx.fillStyle = 'rgb(119, 70, 37)';
+			this.ctx.fill()
+			this.ctx.closePath()
+			this.ctx.restore()
+			idx++
+			this.animate(draw)
+		}
+		draw()
 	}
 }
 
