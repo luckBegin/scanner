@@ -22,7 +22,7 @@ Page({
 				canvas.width = res[0].width * dpr
 				canvas.height = res[0].height * dpr
 				ctx.scale(dpr, dpr)
-				const tree = new Tree(res[0].node,windowWidth,windowHeight)
+				const tree = new Tree(res[0].node,windowWidth,windowHeight, dpr)
 				this.setData({ tree })
 			})
 	},

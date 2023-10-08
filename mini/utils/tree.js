@@ -33,12 +33,13 @@ export class BaseShape {
 	screenHeight = null
 	center = {x: 0, y: 0}
 	animateId = null
-
-	constructor(canvas, screenWidth, screenHeight) {
+	dpr = 1
+	constructor(canvas, screenWidth, screenHeight, dpr) {
 		this.canvas = canvas
 		this.ctx = canvas.getContext('2d');
 		this.screenWidth = screenWidth
 		this.screenHeight = screenHeight;
+		this.dpr = dpr
 		this.center = {x: this.screenWidth / 2, y: this.screenHeight / 2}
 	}
 
@@ -63,12 +64,16 @@ export class BaseShape {
 export class Tree extends BaseShape {
 	text = null
 	heart = null
-
-	constructor(c, w, h) {
-		super(c, w, h)
-		this.text = new Text(c, w, h)
-		this.heart = new Heart(c, w, h)
-		this.seed = new Seed(c, w, h)
+	seed = null
+	branch = null
+	leaf = null
+	constructor(c, w, h, dpr) {
+		super(c, w, h, dpr)
+		this.text = new Text(c, w, h, dpr)
+		this.heart = new Heart(c, w, h, dpr)
+		this.seed = new Seed(c, w, h, dpr)
+		this.branch = new Branch(c,w,h, dpr)
+		this.leaf = new Leaf(c,w,h, dpr)
 		this.init()
 	}
 
@@ -85,79 +90,8 @@ export class Tree extends BaseShape {
 		this.cancelAnimate()
 		this.clearScreen();
 		this.seed.init((h) => {
-			this.drawBranch(h)
+			this.branch.init(h, () => this.leaf.init() )
 		})
-	}
-
-	drawBranch(h) {
-		const point = []
-		const start = [this.center.x, this.center.y * 2 - h - 7]
-		const end = [this.center.x - 20, this.center.y]
-		const delta = [this.center.x, this.center.y + 200]
-		const delta2 = [this.center.x, this.center.y]
-
-		let radius = 10
-		for (let i = 0; i < 100; i++) {
-			point.push(threeBezier(i / 100, start, delta, delta2, end))
-		}
-		let idx = 0;
-		const draw = () => {
-			if (idx >= point.length) {
-				this.cancelAnimate()
-				this.drawSubBranch(point)
-				return
-			}
-			const p = point[idx]
-			this.ctx.save()
-			this.ctx.beginPath()
-			radius *= 0.98
-			p.push(radius);
-			this.ctx.arc(p[0], p[1], radius, 0, 2 * Math.PI)
-			this.ctx.fillStyle = 'rgb(119, 70, 37)';
-			this.ctx.fill()
-			this.ctx.closePath()
-			this.ctx.restore()
-			idx++
-			this.animate(draw)
-		}
-		this.animate(draw)
-	}
-
-	drawSubBranch(points) {
-		const point = points[points.length - 30]
-		const sub = [
-			[
-				point,
-				[point[0] - 100, point[1] - 50],
-				[point[0] - 30, point[1] - 50],
-				[point[0] - 90, point[1] - 55]
-			]
-		]
-
-		sub.forEach()
-		let radius = 3
-		for (let i = 0; i < 100; i++) {
-			point.push(threeBezier(i / 100, point, delta, delta2, tarPoint))
-		}
-		let idx = 0;
-		const draw = () => {
-			if (idx >= point.length) {
-				this.cancelAnimate()
-				return
-			}
-			const p = point[idx]
-			this.ctx.save()
-			this.ctx.beginPath()
-			radius *= 0.98
-			this.ctx.arc(p[0], p[1], radius, 0, 2 * Math.PI)
-			this.ctx.fillStyle = 'rgb(119, 70, 37)';
-			this.ctx.fill()
-			this.ctx.closePath()
-			this.ctx.restore()
-			idx++
-			this.animate(draw)
-		}
-		draw()
 	}
 }
 
@@ -167,8 +101,8 @@ class Heart extends BaseShape {
 	scale = 1.5;
 	mark = 1
 
-	constructor(c, w, h) {
-		super(c, w, h);
+	constructor(c, w, h,dpr) {
+		super(c, w, h,dpr);
 		this.init()
 	}
 
@@ -192,7 +126,7 @@ class Heart extends BaseShape {
 			const rad = i / Math.PI
 			const x = 20 * Math.pow(Math.sin(rad), 3)
 			const y = 13 * Math.cos(rad) - 5 * Math.cos(2 * rad) - 2 * Math.cos(3 * rad) - Math.cos(4 * rad);
-			this.ctx.lineTo(x * this.animaScale * this.scale, -y * this.animaScale * this.scale)
+			this.ctx.lineTo(x * this.animaScale  * this.dpr, -y * this.animaScale  * this.dpr)
 		}
 		this.ctx.fillStyle = 'red'
 		this.ctx.fill();
@@ -202,8 +136,8 @@ class Heart extends BaseShape {
 }
 
 class Text extends BaseShape {
-	constructor(c, w, h) {
-		super(c, w, h);
+	constructor(c, w, h,dpr) {
+		super(c, w, h,dpr);
 		this.init()
 	}
 
@@ -214,28 +148,28 @@ class Text extends BaseShape {
 		this.ctx.strokeStyle = '#f00';
 		this.ctx.fillStyle = '#f00';
 		this.ctx.moveTo(0, 0);
-		this.ctx.lineTo(15, 15);
-		this.ctx.lineTo(60, 15);
+		this.ctx.lineTo(15 * this.dpr, 15 * this.dpr);
+		this.ctx.lineTo(60 * this.dpr, 15 * this.dpr);
+		this.ctx.lineWidth = this.dpr
 		this.ctx.stroke();
-		this.ctx.scale(0.75, 0.75);
-		this.ctx.fontSize = 13
-		this.ctx.fillText("Come", 40, 10);
+		this.ctx.font = `${10 * this.dpr}px Arial`
+		this.ctx.fillText("Come", 25 * this.dpr, 10 * this.dpr);
 		this.ctx.closePath()
 		this.ctx.restore();
 	}
 }
 
 class Seed extends BaseShape {
-	bottom = 20;
+	bottom = 50;
 	height = 0
 	landBottom = 0
 	seedSpeed = 2
 	percent = 0
 	landSize = 0
-	landSpacing = 20
+	landSpacing = 20 * this.dpr
 
-	constructor(c, w, h) {
-		super(c, w, h);
+	constructor(c, w, h,dpr) {
+		super(c, w, h,dpr);
 		this.landBottom = this.screenHeight / 2 - this.bottom
 		this.percent = 0
 	}
@@ -249,7 +183,7 @@ class Seed extends BaseShape {
 		this.ctx.fillStyle = 'rgb(119, 70, 37)';
 		this.ctx.shadowColor = 'rgb(35, 31, 32)';
 		this.ctx.shadowBlur = 2;
-		this.ctx.arc(0, this.height, 9, 0, 2 * Math.PI)
+		this.ctx.arc(0, this.height, 5 * this.dpr, 0, 2 * Math.PI)
 		this.ctx.fill()
 		this.ctx.closePath()
 		this.ctx.restore()
@@ -262,7 +196,7 @@ class Seed extends BaseShape {
 			this.moveToCenter()
 			this.ctx.moveTo(0, this.landBottom)
 			this.ctx.lineTo(x, this.landBottom)
-			this.ctx.lineWidth = 14
+			this.ctx.lineWidth = 9 * this.dpr
 			this.ctx.strokeStyle = 'rgb(119, 70, 37)';
 			this.ctx.lineCap = "round";
 			this.ctx.stroke()
@@ -286,5 +220,132 @@ class Seed extends BaseShape {
 			this.cancelAnimate()
 			if (fn) fn(this.bottom)
 		}
+	}
+
+	print () {
+		this.drawLand()
+	}
+}
+
+
+export class Branch extends BaseShape {
+	branches = []
+	subBranches = []
+	constructor(c, w, h,dpr) {
+		super(c, w, h,dpr);
+	}
+
+	init (h,cb) {
+		const start = [this.center.x, this.center.y * 2 - h - 7 ]
+		const end = [this.center.x - 20, this.center.y]
+		const delta = [this.center.x, this.center.y + 200]
+		const delta2 = [this.center.x, this.center.y]
+		this.branches = this.makePoints([start, delta, delta2 , end], 5 * this.dpr)
+		this.animateDraw(this.branches)
+			.then( _ => {
+				this.cancelAnimate()
+				this.drawSubBranch().then( _ => cb() )
+			})
+	}
+
+	makePoints (p ,r) {
+		const points = []
+		let radius = r
+		for (let i = 0; i < 100; i++) {
+			const result = threeBezier(i / 100, p[0], p[1], p[2], p[3])
+			points.push([result[0],result[1], radius ])
+			radius *= 0.98
+		}
+		return points
+	}
+	drawSubBranch() {
+		return new Promise( resolve => {
+			const points = this.branches
+			const point = points[points.length - 15]
+			const point2 = points[points.length - 30]
+			const point3 = points[points.length - 50]
+			const point4 = points[points.length - 60]
+			const sub = [
+				[
+					point,
+					[point[0] + 30, point[1] - 50],
+					[point[0] + 50, point[1] - 75],
+					[point[0] + 70, point[1] - 73],
+					point[2]
+				], [
+					point2,
+					[point2[0] - 30, point2[1] - 50],
+					[point2[0] - 70, point2[1] - 75],
+					[point2[0] - 90, point2[1] - 73],
+					point2[2]
+				], [
+					point3,
+					[point3[0] - 30, point3[1] - 50],
+					[point3[0] - 50, point3[1] - 75],
+					[point3[0] - 70, point3[1] - 73],
+					point3[2]
+				],[
+					point4,
+					[point4[0] + 30, point4[1] - 50],
+					[point4[0] + 70, point4[1] - 75],
+					[point4[0] + 90, point4[1] - 73],
+					point4[2]
+				],
+			]
+			sub.forEach( s => this.subBranches.push(this.makePoints(s, s[4])))
+			let i = this.subBranches.length
+			Promise.all( this.subBranches.map(i => this.animateDraw(i)) )
+				.then(_=> {
+					this.cancelAnimate()
+					resolve()
+				})
+		})
+	}
+
+	draw (p) {
+		this.ctx.save()
+		this.ctx.beginPath()
+		this.ctx.arc(p[0], p[1], p[2], 0, 2 * Math.PI)
+		this.ctx.fillStyle = 'rgb(119, 70, 37)';
+		this.ctx.fill()
+		this.ctx.closePath()
+		this.ctx.restore()
+	}
+	animateDraw (branches) {
+		return new Promise( resolve => {
+			let idx = 0 ;
+			const fn = () => {
+				if( idx >= branches.length ) {
+					resolve()
+					return
+				}
+				this.draw(branches[idx])
+				idx ++ ;
+				this.animate(fn)
+			}
+			fn()
+		})
+	}
+
+	print() {
+		this.branches.forEach( s => this.draw(s))
+		this.subBranches.forEach( s => s.forEach( j => this.draw(j) ))
+	}
+}
+
+class Leaf extends BaseShape {
+
+	constructor(c, w, h) {
+		super(c, w, h);
+	}
+
+	init () {
+		this.ctx.save()
+		this.ctx.beginPath()
+		this.ctx.rect(20, this.center.y - 100 , this.screenWidth - 40 , 200 )
+		this.ctx.strokeStyle = 'red'
+		this.ctx.stroke()
+		this.ctx.closePath()
+		this.ctx.restore()
 	}
 }
