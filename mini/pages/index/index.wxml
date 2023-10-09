@@ -1,2 +1,4 @@
-<canvas type="2d" id="canvas" style="width: {{ windowWidth }}px;height: {{ windowHeight }}px" bindtap="canvasClick">
-</canvas>
+<!-- <canvas type="2d" id="canvas" style="width: {{ windowWidth }}px;height: {{ windowHeight }}px" bindtap="canvasClick">
+</canvas> -->
+
+<web-view src='http://localhost:4200'></web-view>

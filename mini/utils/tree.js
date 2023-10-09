@@ -334,18 +334,32 @@ export class Branch extends BaseShape {
 }
 
 class Leaf extends BaseShape {
-
-	constructor(c, w, h) {
-		super(c, w, h);
+	constructor(c, w, h, dpr) {
+		super(c, w, h,dpr);
 	}
 
 	init () {
 		this.ctx.save()
 		this.ctx.beginPath()
-		this.ctx.rect(20, this.center.y - 100 , this.screenWidth - 40 , 200 )
+		this.ctx.rect(20, this.center.y - 50 * this.dpr , this.screenWidth - 40 ,  50 * this.dpr * 2  )
 		this.ctx.strokeStyle = 'red'
 		this.ctx.stroke()
 		this.ctx.closePath()
+		this.ctx.restore()
+
+		this.ctx.save()
+		this.moveToCenter()
+		this.ctx.beginPath();
+		this.ctx.lineWidth = 2
+		for (let i = 1; i < 90; i += 0.1) {
+			const rad = i / Math.PI
+			const x = 20 * Math.pow(Math.sin(rad), 3)
+			const y = 13 * Math.cos(rad) - 5 * Math.cos(2 * rad) - 2 * Math.cos(3 * rad) - Math.cos(4 * rad);
+			this.ctx.lineTo(x * 4 * this.dpr, -y * 4  * this.dpr)
+		}
+		this.ctx.fillStyle = 'red'
+		this.ctx.stroke();
+		this.ctx.closePath();
 		this.ctx.restore()
 	}
 }
