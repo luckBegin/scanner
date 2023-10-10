@@ -7,12 +7,14 @@ export interface IHeartTree {
     y: number,
     layer: paper.Layer
 }
-enum Color{
+
+enum Color {
     Branch = 'red',
     Land = 'red',
-    Seed='red',
-    Heart='red'
+    Seed = 'red',
+    Heart = 'red'
 }
+
 export class Base {
     protected x: number
     protected y: number
@@ -34,10 +36,10 @@ export class Base {
         return new paper.Layer()
     }
 
-    debugPoint(point: number[] ,c = 'red' ) {
+    debugPoint(point: number[], c = 'red') {
         new paper.Shape.Circle({
             center: point,
-            radius: 5 ,
+            radius: 3,
             fillColor: c
         })
     }
@@ -212,40 +214,61 @@ export class Seed extends Base {
         this.mainLayer.addChild(l)
     }
 }
+
+interface BranchPoint {
+    x: number
+    y: number
+    radius: number
+    child: BranchPoint[]
+}
 export class Branch extends Base {
     private color = Color.Branch
+    private branches: Array< BranchPoint > = []
+
     constructor(o: IHeartTree) {
         super(o);
     }
 
-    public init () {
-        const start = [this.x , this.bottom] ;
-        const end = [this.x - 7 * this.dpr , this.y ] ;
-        const delta = [ this.x , this.bottom - this.dpr * 50]
-        const delta2 = [ this.x, this.y ]
-        const branches = this.makePoints([start, delta, delta2 , end], 10)
+    public init() {
+        this.drawBranch()
+        this.mainLayer.addChild(this.layer)
+    }
 
+    private drawBranch() {
+        const start = [this.x, this.bottom];
+        const end = [this.x - 7 * this.dpr, this.y];
+        const delta = [this.x, this.bottom - this.dpr * 60]
+        const delta2 = [this.x, this.y]
+        this.branches = this.makePoints([start, delta, delta2, end], 3 * this.dpr)
+        const points = this.branches
+        const point = points[points.length - 15]
+        const sub: any = [
+            [
+                point,
+                [point.x + 30, point.y - 50],
+                [point.x + 50, point.y - 75],
+                [point.x + 70, point.y - 73],
+                point.radius
+            ]
+        ]
+        sub.forEach((s: any) => {
+            points[points.length - 15].child = this.makePoints([s[0],s[1],s[2],s[3]],s[4])
+        })
         const l = new paper.Layer()
-        // this.debugPoint(start)
-        // this.debugPoint(end)
-        // this.debugPoint(delta, 'green')
-        // this.debugPoint(delta2, 'blue')
         let timeout = 0;
         const draw = () => {
             timeout = setTimeout(() => {
-                if( !branches.length ) {
+                if (!this.branches.length) {
                     clearTimeout(timeout)
                     return
                 }
-                const point = branches.shift() as number[]
+                const point = this.branches.shift() as BranchPoint
                 l.addChild(this.createBranch(point))
                 draw()
-            })
+            }, 10)
         }
         draw()
         this.layer.addChild(l)
-        this.layer.scale(this.dpr)
-        this.mainLayer.addChild(this.layer)
     }
 
     static threeBezier(t: number, p1: number[], cp1: number[], cp2: number[], p2: number[]) {
@@ -266,22 +289,27 @@ export class Branch extends Base {
         return [x, y];
     }
 
-    makePoints (p: number[][] ,r: number) {
+    makePoints(p: number[][], r: number): Array< BranchPoint > {
         const points = []
         let radius = r
         for (let i = 0; i < 100; i++) {
             const result = Branch.threeBezier(i / 100, p[0], p[1], p[2], p[3])
-            points.push([result[0],result[1], radius ])
-            radius *= 0.98
+            points.push({
+                x: result[0],
+                y:result[1],
+                radius,
+                child: []
+            })
+            radius *= 0.99
         }
         return points
     }
 
-    createBranch (p: number[]) {
+    createBranch(p: BranchPoint ) {
         return new paper.Shape.Circle({
-            center: [20,20],
-            radius: 5,
-            color: this.color
+            center: [p.x, p.y],
+            radius: p.radius ,
+            fillColor: this.color
         })
     }
 }
