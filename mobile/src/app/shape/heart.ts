@@ -221,9 +221,10 @@ interface BranchPoint {
     radius: number
     child: BranchPoint[]
 }
+
 export class Branch extends Base {
     private color = Color.Branch
-    private branches: Array< BranchPoint > = []
+    private branches: Array<BranchPoint> = []
 
     constructor(o: IHeartTree) {
         super(o);
@@ -241,10 +242,10 @@ export class Branch extends Base {
         const delta2 = [this.x, this.y]
         this.branches = this.makePoints([start, delta, delta2, end], 3 * this.dpr)
         const points = this.branches
-        const point = points[points.length - 15]
+        const point = points[points.length - 90]
         const sub: any = [
             [
-                point,
+                [point.x, point.y],
                 [point.x + 30, point.y - 50],
                 [point.x + 50, point.y - 75],
                 [point.x + 70, point.y - 73],
@@ -252,22 +253,23 @@ export class Branch extends Base {
             ]
         ]
         sub.forEach((s: any) => {
-            points[points.length - 15].child = this.makePoints([s[0],s[1],s[2],s[3]],s[4])
+            points[points.length - 15].child = this.makePoints([s[0], s[1], s[2], s[3]], s[4])
         })
         const l = new paper.Layer()
-        let timeout = 0;
-        const draw = () => {
-            timeout = setTimeout(() => {
-                if (!this.branches.length) {
+
+        const draw = (branches: Array<BranchPoint>) => {
+            const timeout = setTimeout(() => {
+                if (!branches.length) {
                     clearTimeout(timeout)
                     return
                 }
-                const point = this.branches.shift() as BranchPoint
+                const point = branches.shift() as BranchPoint
+                if (point.child.length) draw(point.child)
                 l.addChild(this.createBranch(point))
-                draw()
+                draw(branches)
             }, 10)
         }
-        draw()
+        draw(this.branches)
         this.layer.addChild(l)
     }
 
@@ -289,14 +291,14 @@ export class Branch extends Base {
         return [x, y];
     }
 
-    makePoints(p: number[][], r: number): Array< BranchPoint > {
+    makePoints(p: number[][], r: number): Array<BranchPoint> {
         const points = []
         let radius = r
         for (let i = 0; i < 100; i++) {
             const result = Branch.threeBezier(i / 100, p[0], p[1], p[2], p[3])
             points.push({
                 x: result[0],
-                y:result[1],
+                y: result[1],
                 radius,
                 child: []
             })
@@ -305,10 +307,10 @@ export class Branch extends Base {
         return points
     }
 
-    createBranch(p: BranchPoint ) {
+    createBranch(p: BranchPoint) {
         return new paper.Shape.Circle({
             center: [p.x, p.y],
-            radius: p.radius ,
+            radius: p.radius,
             fillColor: this.color
         })
     }
