@@ -242,7 +242,8 @@ export class Branch extends Base {
         const delta2 = [this.x, this.y]
         this.branches = this.makePoints([start, delta, delta2, end], 3 * this.dpr)
         const points = this.branches
-        const point = points[points.length - 90]
+        const point = points[points.length - 70]
+        const point2 = points[points.length - 50]
         const sub: any = [
             [
                 [point.x, point.y],
@@ -250,6 +251,12 @@ export class Branch extends Base {
                 [point.x + 50, point.y - 75],
                 [point.x + 70, point.y - 73],
                 point.radius
+            ], [
+                [point2.x, point2.y],
+                [point2.x + 30, point2.y - 50],
+                [point2.x + 50, point2.y - 75],
+                [point2.x + 70, point2.y - 73],
+                point2.radius
             ]
         ]
         sub.forEach((s: any) => {
